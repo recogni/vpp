@@ -1,9 +1,9 @@
-//@ my %config = do './config.pl';
+//@ require './config.pl';
 
 //@ for my $i (0..7) {
     .D$i(data[$i]),
 //@ }
 
-// comment = $config{foobar} 
-// $config{N} x $config{H} x $config{W} x $config{C}
+// comment = $foobar
+// $N x $H x $W x $C
 // Victory!
