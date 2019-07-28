@@ -418,7 +418,27 @@ sub GetArgs {
       push(@inc, shift);
     } elsif (/^--perldebug/) {
       $perl_debug = shift;
+    } elsif (/^--perlvar/) {
+      shift =~ /([^=]*)(=(.*?)\s*$)?/;
+      tie(${$1}, 'PerlVar', defined $3 ? $3 : 1);
     }
   }
 }
 
+
+
+package PerlVar;
+
+sub TIESCALAR {
+    my $class = shift(@_);
+    my $value = shift(@_) || 1;
+    bless({"value" => $value}, $class);
+}
+
+sub FETCH {
+    my $self = shift(@_);
+    return $self->{"value"};
+}
+
+sub STORE {
+}
