@@ -157,6 +157,9 @@ Pete Johnson <pete.johnson@cisco.com>
 # This program requires perl 5 to run.
 require 5;
 
+use FindBin;
+use lib "$FindBin::Bin";
+
 sub EmitContext {
   sprintf("\n# line %d %s\n",$line_number+1,$current_file);
 }
