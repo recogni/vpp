@@ -159,6 +159,7 @@ require 5;
 
 use FindBin;
 use lib "$FindBin::Bin";
+use Vpp;
 
 sub EmitContext {
   sprintf("\n# line %d %s\n",$line_number+1,$current_file);
