@@ -160,6 +160,7 @@ require 5;
 use FindBin;
 use lib "$FindBin::Bin";
 use Vpp;
+use Cwd qw(abs_path);
 
 sub EmitContext {
   sprintf("\n# line %d %s\n",$line_number+1,$current_file);
@@ -306,8 +307,8 @@ sub ScanText {
       local *INCLUDE;
       ($dir) = grep {-e "$_/${file}"} @incdirs;
       defined $dir || die "$0: \"${file}\": could not find included file.\n";
-      $outstring .= EmitText("// begin include of $dir/${file}\n");
-      push(@deps,"$dir/${file}");
+      $outstring .= EmitText("// begin include of " . abs_path("$dir/${file}") . "\n");
+      push(@deps,abs_path("$dir/${file}"));
       open(INCLUDE,"$dir/${file}") || die "$0: ${file}: $!\n";
       PushContext("$dir/${file}");
       $outstring .= EmitContext;
