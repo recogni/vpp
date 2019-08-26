@@ -184,6 +184,7 @@ sub AddDependency {
 }
 
 my $output_file = "-";
+my $module_name = undef;
 my $deps_file = undef;
 my $perl_debug = undef;
 
@@ -364,21 +365,28 @@ if ($perl_mode) {
       print $dbfile $outstring;
     }
   }
+  open BUFFER, ">", \$buffer;
+  select BUFFER;
+  if (!defined eval $outstring) {
+    die "$@\n";
+  }
+  select STDOUT;
+  if (defined $module_name) {
+    $buffer =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
+  }
   if ($output_file eq "-") {
-    if (!defined eval $outstring) {
-      die "$@\n";
-    }
+    print $buffer;
   } else {
     my $tmp_file = "/tmp/vpp." . $ENV{'USER'} . time . ".$$";
-    open STDOUT, ">$tmp_file" or die "$tmp_file: $!\n";
-    if (!defined eval $outstring) {
-      unlink $tmp_file;
-      die "$@\n";
-    } else {
-      system "mv $tmp_file $output_file\n";
-    }
+    open FILE, ">$tmp_file" or die "$tmp_file: $!\n";
+    print FILE $buffer;
+    close FILE;
+    rename $tmp_file, $output_file;
   }
 } else {
+  if (defined $module_name) {
+    $outstring =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
+  }
   open STDOUT, ">$output_file" or die "$output_file: $!\n";
   print $outstring;
 }
@@ -415,6 +423,8 @@ sub GetArgs {
       shift;			# ignore the argument
     } elsif (/^-output/) {
       $output_file = shift;
+    } elsif (/^-module/) {
+      $module_name = shift;
     } elsif (/^-deps/) {
       $deps_file = shift;
     } elsif (/^-perl/) {
