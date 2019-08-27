@@ -367,9 +367,12 @@ if ($perl_mode) {
   }
   open BUFFER, ">", \$buffer;
   select BUFFER;
+  @saved_INC = @INC;
+  push(@INC,@incdirs);
   if (!defined eval $outstring) {
     die "$@\n";
   }
+  @INC = @saved_INC;
   select STDOUT;
   if (defined $module_name) {
     $buffer =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
