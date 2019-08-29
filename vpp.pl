@@ -365,7 +365,18 @@ if ($perl_mode) {
       print $dbfile $outstring;
     }
   }
+
   open BUFFER, ">", \$buffer;
+
+  no warnings;
+  *CORE::GLOBAL::require = sub {
+    if (CORE::require($_[0])) {
+      print("// begin include of " . abs_path($INC{$_[0]}) . "\n");
+      push(@deps, abs_path($INC{$_[0]}));
+    }
+  };
+  use warnings;
+
   select BUFFER;
   @saved_INC = @INC;
   push(@INC,@incdirs);
@@ -374,9 +385,11 @@ if ($perl_mode) {
   }
   @INC = @saved_INC;
   select STDOUT;
+
   if (defined $module_name) {
     $buffer =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
   }
+
   if ($output_file eq "-") {
     print $buffer;
   } else {
