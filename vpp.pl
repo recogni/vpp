@@ -386,25 +386,21 @@ if ($perl_mode) {
   @INC = @saved_INC;
   select STDOUT;
 
-  if (defined $module_name) {
-    $buffer =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
-  }
+  $outstring = $buffer;
+}
 
-  if ($output_file eq "-") {
-    print $buffer;
-  } else {
-    my $tmp_file = "/tmp/vpp." . $ENV{'USER'} . time . ".$$";
-    open FILE, ">$tmp_file" or die "$tmp_file: $!\n";
-    print FILE $buffer;
-    close FILE;
-    rename $tmp_file, $output_file;
-  }
-} else {
-  if (defined $module_name) {
-    $outstring =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
-  }
-  open STDOUT, ">$output_file" or die "$output_file: $!\n";
+if (defined $module_name) {
+  $outstring =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
+}
+
+if ($output_file eq "-") {
   print $outstring;
+} else {
+  my $tmp_file = "/tmp/vpp." . $ENV{'USER'} . time . ".$$";
+  open FILE, ">$tmp_file" or die "$tmp_file: $!\n";
+  print FILE $outstring;
+  close FILE;
+  rename $tmp_file, $output_file;
 }
 
 if (defined $deps_file) {
