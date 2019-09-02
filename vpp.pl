@@ -314,7 +314,7 @@ sub ScanText {
       PushContext("$dir/${file}");
       $outstring .= EmitContext;
       ScanText(*INCLUDE,undef,0);
-      $outstring .= EmitText("// end include of $dir/${file}\n");
+      $outstring .= EmitText("// end include of " . abs_path("$dir/${file}") . "\n");
       PopContext;
       $outstring .= EmitContext;
       close(INCLUDE);
@@ -371,7 +371,8 @@ if ($perl_mode) {
   no warnings;
   *CORE::GLOBAL::require = sub {
     if (CORE::require($_[0])) {
-      print("// begin include of " . abs_path($INC{$_[0]}) . "\n");
+      print("// begin require of " . abs_path($INC{$_[0]}) . "\n");
+      print("// end require of " . abs_path($INC{$_[0]}) . "\n");
       push(@deps, abs_path($INC{$_[0]}));
     }
   };
