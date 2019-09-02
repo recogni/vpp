@@ -185,6 +185,7 @@ sub AddDependency {
 
 my $output_file = "-";
 my $module_name = undef;
+my $keep_includes = 0;
 my $deps_file = undef;
 my $perl_debug = undef;
 
@@ -394,6 +395,10 @@ if (defined $module_name) {
   $outstring =~ s/^(\s*module\s+)[A-Za-z_][A-Za-z0-9_]*/$1$module_name/m;
 }
 
+if ($keep_includes) {
+  $outstring =~ s/^(\/\/ begin include of ([^\n]+)(?<!\.vhp)\n).*^(\/\/ end include of \2)/$1`include "$2"\n$3/msg;
+}
+
 if ($output_file eq "-") {
   print $outstring;
 } else {
@@ -440,6 +445,8 @@ sub GetArgs {
       $module_name = shift;
     } elsif (/^-deps/) {
       $deps_file = shift;
+    } elsif (/^-keepincludes/) {
+      $keep_includes = 1;
     } elsif (/^-perl/) {
       $perl_mode = 1;
     } elsif (/^--perlinc/) {
