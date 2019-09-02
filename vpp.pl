@@ -376,7 +376,7 @@ if ($perl_mode) {
       push(@deps, abs_path($INC{$_[0]}));
     }
   };
-  use warnings;
+  use warnings FATAL => qw(uninitialized);
 
   select BUFFER;
   @saved_INC = @INC;
