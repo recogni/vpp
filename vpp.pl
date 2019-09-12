@@ -336,7 +336,7 @@ sub ScanText {
       $_ = $3."\n";
       $outstring .= EmitContext;
       goto again;
-    } elsif ($perl_mode && /^(.*?)\/\*@(.*)/) {
+    } elsif ($perl_mode && /^(.*?)\/\*@(.*)/s) {
       $outstring .= EmitText($1);
       $outstring .= $2;
       while (1) {
