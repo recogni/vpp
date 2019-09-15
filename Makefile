@@ -1,6 +1,6 @@
 
-all: foo.v
+example: example/foo.v
 
 %.v: %.vp
-	./vpp.pl -perl $< -output $@
+	./vpp.pl +incdir+`pwd`/example -perl $< -output $@
 

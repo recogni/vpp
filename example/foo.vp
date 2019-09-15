@@ -1,4 +1,4 @@
-//@ require './config.pl';
+//@ require 'config.pl';
 
 //@ for my $i (0..7) {
     .D$i(data[$i]),
