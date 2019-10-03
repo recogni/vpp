@@ -315,13 +315,13 @@ sub ScanText {
         ($dir) = grep {-e "$_/${file}"} @incdirs;
       }
       defined $dir || die "$0: \"${file}\": could not find included file.\n";
-      $outstring .= EmitText("// begin include of " . abs_path("$dir/${file}") . "\n");
+      $outstring .= EmitText("// begin (" . ($#{file_stack}+1) .  ") include of " . abs_path("$dir/${file}") . "\n");
       push(@deps,abs_path("$dir/${file}"));
       open(INCLUDE,"$dir/${file}") || die "$0: ${file}: $!\n";
       PushContext("$dir/${file}");
       $outstring .= EmitContext;
       ScanText(*INCLUDE,undef,0);
-      $outstring .= EmitText("// end include of " . abs_path("$dir/${file}") . "\n");
+      $outstring .= EmitText("// end (" . $#{file_stack} . ") include of " . abs_path("$dir/${file}") . "\n");
       PopContext;
       $outstring .= EmitContext;
       close(INCLUDE);
@@ -402,7 +402,7 @@ if (defined $module_name) {
 }
 
 if ($keep_includes) {
-  $outstring =~ s/^(\/\/ begin include of ([^\n]+)(?<!\.vhp)\n).*^(\/\/ end include of \2)/$1`include "$2"\n$3/msg;
+  $outstring =~ s/^(\/\/ begin (\(\d+\)) include of ([^\n]+)(?<!\.vhp)\n).*?^(\/\/ end \2 include of \3)/$1`include "$3"\n$4/msg;
 }
 
 if ($output_file eq "-") {
