@@ -307,7 +307,13 @@ sub ScanText {
       # because that code is not evaluated at this point.
       if ($quoted eq "") { $file = eval $file; }
       local *INCLUDE;
-      ($dir) = grep {-e "$_/${file}"} @incdirs;
+      if ($file =~ /^\// && -e $file) {
+        $dir = "";
+        substr($file, 0, 1) = "";
+      }
+      else {
+        ($dir) = grep {-e "$_/${file}"} @incdirs;
+      }
       defined $dir || die "$0: \"${file}\": could not find included file.\n";
       $outstring .= EmitText("// begin include of " . abs_path("$dir/${file}") . "\n");
       push(@deps,abs_path("$dir/${file}"));
