@@ -161,6 +161,7 @@ use FindBin;
 use lib "$FindBin::Bin";
 use Vpp;
 use Cwd qw(abs_path);
+use File::Copy qw(move);
 
 sub EmitContext {
   !$perl_mode ? "" :
@@ -421,7 +422,7 @@ if ($output_file eq "-") {
   open FILE, ">$tmp_file" or die "$tmp_file: $!\n";
   print FILE $outstring;
   close FILE;
-  rename $tmp_file, $output_file;
+  move $tmp_file, $output_file;
 }
 
 if (defined $deps_file) {
