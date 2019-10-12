@@ -303,6 +303,7 @@ sub ScanText {
       my $quoted = $1;
       my $dir;
       my $file = $2;
+      my $rest;
       # if no quotes were used in the include, then eval the argument
       # this allows using a +define to specify an include file.
       # Note that perl code within the .vs file cannot specify the include
@@ -312,18 +313,24 @@ sub ScanText {
       if ($file =~ /^\// && -e $file) {
         $dir = "";
         substr($file, 0, 1) = "";
+        $rest = $file;
       }
       else {
+        $rest = $file;
         ($dir) = grep {-e "$_/${file}"} @incdirs;
+        if (!defined $dir && $perl_mode && $file =~ /\.[^.]*h$/) {
+          $file .= "p";
+          ($dir) = grep {-e "$_/${file}"} @incdirs;
+        }
       }
       defined $dir || die "$0: \"${file}\": could not find included file.\n";
-      $outstring .= EmitText("// begin (" . ($#{file_stack}+1) .  ") include of " . abs_path("$dir/${file}") . "\n");
+      $outstring .= EmitText("// begin (" . ($#{file_stack}+1) .  ") include of " . abs_path("$dir/${rest}") . "\n");
       push(@deps,abs_path("$dir/${file}"));
       open(INCLUDE,"$dir/${file}") || die "$0: ${file}: $!\n";
       PushContext("$dir/${file}");
       $outstring .= EmitContext;
       ScanText(*INCLUDE,undef,0);
-      $outstring .= EmitText("// end (" . $#{file_stack} . ") include of " . abs_path("$dir/${file}") . "\n");
+      $outstring .= EmitText("// end (" . $#{file_stack} . ") include of " . abs_path("$dir/${rest}") . "\n");
       PopContext;
       $outstring .= EmitContext;
       close(INCLUDE);
