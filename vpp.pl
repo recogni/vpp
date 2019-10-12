@@ -163,7 +163,8 @@ use Vpp;
 use Cwd qw(abs_path);
 
 sub EmitContext {
-  sprintf("\n# line %d %s\n",$line_number+1,$current_file) .
+  !$perl_mode ? "" :
+    sprintf("\n# line %d %s\n",$line_number+1,$current_file) .
     sprintf("print qq\001`line %d \"%s\" 0\n\001;",$line_number+1,$current_file);
 }
 
