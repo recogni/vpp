@@ -162,6 +162,7 @@ use lib "$FindBin::Bin";
 use Vpp;
 use Cwd qw(abs_path);
 use File::Copy qw(move);
+use File::Basename qw(basename dirname);
 
 sub EmitContext {
   !$perl_mode ? "" :
@@ -387,10 +388,24 @@ if ($perl_mode) {
 
   no warnings;
   *CORE::GLOBAL::require = sub {
-    if (CORE::require($_[0])) {
-      print("// begin require of " . abs_path($INC{$_[0]}) . "\n");
-      print("// end require of " . abs_path($INC{$_[0]}) . "\n");
-      push(@deps, abs_path($INC{$_[0]}));
+    my $expr = $_[0];
+    if ($expr =~ /^(?!\/).*\.pl$/) {
+      foreach my $prefix (@INC) {
+        if (-f "$prefix/$expr") {
+          $expr = "$prefix/$expr";
+          $dir = dirname($expr);
+          $expr = basename($expr);
+          if (!grep {abs_path($_) eq abs_path($dir)} @INC) {
+            push(@INC, $dir);
+          }
+          last;
+        }
+      }
+    }
+    if (CORE::require($expr)) {
+      print("// begin require of " . abs_path($INC{$expr}) . "\n");
+      print("// end require of " . abs_path($INC{$expr}) . "\n");
+      push(@deps, abs_path($INC{$expr}));
     }
   };
   use warnings FATAL => qw(uninitialized);
