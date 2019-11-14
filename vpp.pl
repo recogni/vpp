@@ -167,7 +167,7 @@ use File::Basename qw(basename dirname);
 sub EmitContext {
   !$perl_mode ? "" :
     sprintf("\n# line %d %s\n",$line_number+1,$current_file) .
-    sprintf("print qq\001`line %d \"%s\" 0\n\001;",$line_number+1,$current_file);
+    sprintf("defined(\$pragmas{'lines'}) and \$pragmas{'lines'} and print qq\001`line %d \"%s\" 0\n\001;",$line_number+1,$current_file);
 }
 
 sub PushContext {
@@ -210,7 +210,8 @@ my $outstring = "";
 
 if ($perl_mode) {		# emit defines from command line
   $outstring .= "BEGIN {\n";
-  $outstring .=  "  our %defines;\n";
+  $outstring .= "  our %pragmas = ('lines' => 1);\n";
+  $outstring .= "  our %defines;\n";
   for (keys %defines) {
     $outstring .= qq{  \$defines{"$_"} = qq\001$defines{$_}\001;\n};
   }
@@ -246,7 +247,9 @@ if ($#files >= 0) {
     push(@deps,$_);
     open(FILE,$_) || die ("$_: $!");
     PushContext($_);
-    $outstring .= EmitContext;
+    if (!$perl_mode) {
+      $outstring .= EmitContext;
+    }
     ScanText(*FILE,undef,0);
     PopContext;
     close(FILE);
@@ -270,6 +273,7 @@ sub ScanText {
   my $file = shift;		# filehandle to read from
   my $scanTo = shift;		# stop when input matches this (never if undefined)
   my $ignore = shift;		# true if we should ignore what we see
+  my $firstPlainEmit = $perl_mode;
 
   while (<$file>) {
     s/\r//;
@@ -345,8 +349,13 @@ sub ScanText {
       if ($leadin !~ /^\s*$/) {
         $outstring .= EmitText($leadin);
       }
-      $outstring .= $special;
-      $outstring .= EmitContext;
+      if ($special =~ /^\s*pragma\s+(\S+)\s+(.+?)\s*$/) {
+        $outstring .= "\$pragmas{'$1'} = $2;";
+      }
+      else {
+        $outstring .= $special;
+        $outstring .= EmitContext;
+      }
     } elsif ($perl_mode && /^(.*?)\/\*@(.*?)@\*\/(.*)/) {
       $outstring .= EmitText($1);
       $outstring .= $2;
@@ -369,6 +378,12 @@ sub ScanText {
         }
       }
     } else {
+      if ($firstPlainEmit) {
+        $firstPlainEmit = 0;
+        $line_number--;
+        $outstring .= EmitContext;
+        $line_number++;
+      }
       $outstring .= EmitText($_);
     }
   }
