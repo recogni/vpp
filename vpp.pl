@@ -292,11 +292,11 @@ sub ScanText {
       my $token = $1;
       my $value = $3;
       if (defined $value && $value !~ /^\s*$/) {
-	$defines{$token} = $value;
-	$outstring .= qq{\$defines{\"$token\"} = qq{$value};} if ($perl_mode);
+        $defines{$token} = $value;
+        $outstring .= qq{\$defines{\"$token\"} = qq{$value};} if ($perl_mode);
       } else {
-	$defines{$token} = 1;
-	$outstring .= qq{\$defines{\"$token\"} = 1;} if ($perl_mode);
+        $defines{$token} = 1;
+        $outstring .= qq{\$defines{\"$token\"} = 1;} if ($perl_mode);
       }
       $outstring .= EmitText($_);
       next;
@@ -343,7 +343,7 @@ sub ScanText {
       my $leadin = $1;
       my $special = $2;
       if ($leadin !~ /^\s*$/) {
-	$outstring .= EmitText($leadin);
+        $outstring .= EmitText($leadin);
       }
       $outstring .= $special;
       $outstring .= EmitContext;
@@ -357,16 +357,16 @@ sub ScanText {
       $outstring .= EmitText($1);
       $outstring .= $2;
       while (1) {
-	$_ = <$file>;
-	$line_number++;
-	if (/(.*?)@\*\/(.*)/) {
-	  $outstring .= $1;
-	  $_ = $2;
-	  $outstring .= EmitContext;
-	  goto again;
-	} else {
-	  $outstring .= $_;
-	}
+        $_ = <$file>;
+        $line_number++;
+        if (/(.*?)@\*\/(.*)/) {
+          $outstring .= $1;
+          $_ = $2;
+          $outstring .= EmitContext;
+          goto again;
+        } else {
+          $outstring .= $_;
+        }
       }
     } else {
       $outstring .= EmitText($_);
@@ -455,8 +455,8 @@ sub GetArgs {
   while ($_ = shift) {
     if (/^\+define\+(.*)/) {
       for (split(/\+/,$1)) {
-	/([^=]*)(=(.*?)\s*$)?/;
-	$defines{$1} = defined $3 ? $3 : "";
+        /([^=]*)(=(.*?)\s*$)?/;
+        $defines{$1} = defined $3 ? $3 : "";
       }
     } elsif (/^\+incdir\+(.*)/) {
       push(@incdirs,split(/\+/,$1));
