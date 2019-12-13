@@ -211,6 +211,9 @@ my $outstring = "";
 if ($perl_mode) {		# emit defines from command line
   $outstring .= "BEGIN {\n";
   $outstring .= "  our %pragmas = ('lines' => 1);\n";
+  for (keys %pragmas) {
+    $outstring .= qq{  \$pragmas{"$_"} = qq\001$pragmas{$_}\001;\n};
+  }
   $outstring .= "  our %defines;\n";
   for (keys %defines) {
     $outstring .= qq{  \$defines{"$_"} = qq\001$defines{$_}\001;\n};
@@ -502,6 +505,9 @@ sub GetArgs {
     } elsif (/^--perlvar/) {
       shift =~ /([^=]*)(=(.*?)\s*$)?/;
       tie(${$1}, 'PerlVar', defined $3 ? $3 : 1);
+    } elsif (/^--perlpragma/) {
+      shift =~ /([^=]*)(=(.*?)\s*$)?/;
+      $pragmas{$1} = defined $3 ? int($3) : 1;
     }
   }
 }
