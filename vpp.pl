@@ -190,6 +190,7 @@ sub AddDependency {
 my $output_file = "-";
 my $module_name = undef;
 my $keep_includes = 0;
+my $loose_includes = 0;
 my $deps_file = undef;
 my $perl_debug = undef;
 
@@ -327,22 +328,36 @@ sub ScanText {
       else {
         $rest = $file;
         ($dir) = grep {-e "$_/${file}"} @incdirs;
-        if (!defined $dir && $perl_mode && $file =~ /\.[^.]*h$/) {
-          $file .= "p";
-          ($dir) = grep {-e "$_/${file}"} @incdirs;
+        if (!defined $dir && $file =~ /\.[^.]*vh$/) {
+          if ($perl_mode) {
+            ($dir) = grep {-e "$_/${file}p"} @incdirs;
+          }
+          if (defined $dir) {
+            $file .= "p";
+          }
+          elsif ($loose_includes) {
+            my ($base) = $file =~ /^(.+?)(?:\.[^.]*)?$/;
+            my $pattern = "{" . join(",", @incdirs) . "}/$base.*";
+            my @files = glob($pattern);
+            if (@files) {
+              $dir = dirname($files[0]);
+            }
+          }
         }
       }
       defined $dir || die "$0: \"${file}\": could not find included file.\n";
       $outstring .= EmitText("// begin (" . ($#{file_stack}+1) .  ") include of " . abs_path("$dir/${rest}") . "\n");
       push(@deps,abs_path("$dir/${file}"));
-      open(INCLUDE,"$dir/${file}") || die "$0: ${file}: $!\n";
       PushContext("$dir/${file}");
-      $outstring .= EmitContext;
-      ScanText(*INCLUDE,undef,0);
+      if (!$loose_includes || -e "$dir/${file}") {
+        open(INCLUDE,"$dir/${file}") || die "$0: ${file}: $!\n";
+        $outstring .= EmitContext;
+        ScanText(*INCLUDE,undef,0);
+        close(INCLUDE);
+      }
       $outstring .= EmitText("// end (" . $#{file_stack} . ") include of " . abs_path("$dir/${rest}") . "\n");
       PopContext;
       $outstring .= EmitContext;
-      close(INCLUDE);
       next;
     }
   again:
@@ -496,6 +511,8 @@ sub GetArgs {
       $deps_file = shift;
     } elsif (/^-keepincludes/) {
       $keep_includes = 1;
+    } elsif (/^-looseincludes/) {
+      $loose_includes = 1;
     } elsif (/^-perl/) {
       $perl_mode = 1;
     } elsif (/^--perlinc/) {
