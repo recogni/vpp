@@ -466,7 +466,7 @@ if ($keep_includes) {
 if ($output_file eq "-") {
   print $outstring;
 } else {
-  my $tmp_file = "/tmp/vpp." . $ENV{'USER'} . time . ".$$";
+  my $tmp_file = "/tmp/vpp." . (getpwuid($<) || $<) . time . ".$$";
   open FILE, ">$tmp_file" or die "$tmp_file: $!\n";
   print FILE $outstring;
   close FILE;
