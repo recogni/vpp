@@ -193,6 +193,7 @@ my $keep_includes = 0;
 my $loose_includes = 0;
 my $deps_file = undef;
 my $perl_debug = undef;
+my $perl_defines = 0;
 
 @incdirs = (".");		# always include current directory
 $" = " ";
@@ -253,6 +254,10 @@ if ($#files >= 0) {
     PushContext($_);
     if (!$perl_mode) {
       $outstring .= EmitContext;
+    }
+    elsif ($_ =~ /\.pl$/) {
+      close(FILE);
+      open(FILE,"<",\"//@ require \"$_\";\n");
     }
     ScanText(*FILE,undef,0);
     PopContext;
@@ -443,16 +448,35 @@ if ($perl_mode) {
   };
   use warnings FATAL => qw(uninitialized);
 
+  %existing_scalars = ();
+  foreach my $name (grep {ref(\${main::{$_}}) eq 'GLOB'} keys %main::) {
+    if (defined ${*{$main::{$name}}{SCALAR}}) {
+      $existing_scalars{$name} = 1;
+    }
+  }
+
   select BUFFER;
   @saved_INC = @INC;
   push(@INC,@incdirs);
+
   if (!defined eval $outstring) {
     die "$@\n";
   }
+
   @INC = @saved_INC;
   select STDOUT;
 
   $outstring = $buffer;
+
+  if ($perl_defines) {
+    foreach my $name (grep {ref(\${main::{$_}}) eq 'GLOB'} sort keys %main::) {
+      if (defined ${*{$main::{$name}}{SCALAR}}) {
+        if (not exists $existing_scalars{$name} and $name =~ /^[A-Za-z]+_/) {
+            $outstring .= "`define " . uc($name) . " " . ${*{$main::{$name}}{SCALAR}} . "\n";
+        }
+      }
+    }
+  }
 }
 
 if (defined $module_name) {
@@ -525,6 +549,8 @@ sub GetArgs {
     } elsif (/^--perlpragma/) {
       shift =~ /([^=]*)(=(.*?)\s*$)?/;
       $pragmas{$1} = defined $3 ? int($3) : 1;
+    } elsif (/^--perldefines/) {
+      $perl_defines = 1;
     }
   }
 }
