@@ -561,7 +561,10 @@ package PerlVar;
 
 sub TIESCALAR {
     my $class = shift(@_);
-    my $value = shift(@_) || 1;
+    my $value = shift(@_);
+    if (!defined($value)) {
+      $value = 1;
+    }
     bless({"value" => $value}, $class);
 }
 
