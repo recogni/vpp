@@ -428,6 +428,7 @@ if ($perl_mode) {
   *CORE::GLOBAL::require = sub {
     my $expr = $_[0];
     if ($expr =~ /^(?!\/).*\.pl$/) {
+      my $found;
       foreach my $prefix (@INC) {
         if (-f "$prefix/$expr") {
           $expr = "$prefix/$expr";
@@ -436,7 +437,16 @@ if ($perl_mode) {
           if (!grep {abs_path($_) eq abs_path($dir)} @INC) {
             push(@INC, $dir);
           }
+          $found = 1;
           last;
+        }
+      }
+      if (!$found && $loose_includes) {
+        my ($base) = $expr =~ /^(.+?)(?:\.[^.]*)?$/;
+        my $pattern = "{" . join(",", @incdirs) . "}/$base.*";
+        my @files = glob($pattern);
+        if (@files) {
+          $INC{$expr} = dirname($files[0]) . "/" . $expr;
         }
       }
     }
@@ -446,7 +456,10 @@ if ($perl_mode) {
       push(@deps, abs_path($INC{$expr}));
     }
   };
-  use warnings FATAL => qw(uninitialized);
+
+  if (!$loose_includes) {
+    use warnings FATAL => qw(uninitialized);
+  }
 
   %existing_scalars = ();
   foreach my $name (grep {ref(\${main::{$_}}) eq 'GLOB'} keys %main::) {
