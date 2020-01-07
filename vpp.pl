@@ -212,7 +212,7 @@ my $outstring = "";
 
 if ($perl_mode) {		# emit defines from command line
   $outstring .= "BEGIN {\n";
-  $outstring .= "  our %pragmas = ('lines' => 1);\n";
+  $outstring .= "  our %pragmas = ('lines' => 0);\n";
   for (keys %pragmas) {
     $outstring .= qq{  \$pragmas{"$_"} = qq\001$pragmas{$_}\001;\n};
   }
