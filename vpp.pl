@@ -167,7 +167,7 @@ use File::Basename qw(basename dirname);
 sub EmitContext {
   !$perl_mode ? "" :
     sprintf("\n# line %d %s\n",$line_number+1,$current_file) .
-    sprintf("defined(\$pragmas{'lines'}) and \$pragmas{'lines'} and print qq\001`line %d \"%s\" 0\n\001;",$line_number+1,$current_file);
+    sprintf("defined(\$pragmas[0]{'lines'}) and \$pragmas[0]{'lines'} and print qq\001`line %d \"%s\" 0\n\001;",$line_number+1,$current_file);
 }
 
 sub PushContext {
@@ -212,9 +212,9 @@ my $outstring = "";
 
 if ($perl_mode) {		# emit defines from command line
   $outstring .= "BEGIN {\n";
-  $outstring .= "  our %pragmas = ('lines' => 0);\n";
+  $outstring .= "  our \@pragmas = ({'lines' => 0});\n";
   for (keys %pragmas) {
-    $outstring .= qq{  \$pragmas{"$_"} = qq\001$pragmas{$_}\001;\n};
+    $outstring .= qq{  \$pragmas[0]{"$_"} = qq\001$pragmas{$_}\001;\n};
   }
   $outstring .= "  our %defines;\n";
   for (keys %defines) {
@@ -372,8 +372,16 @@ sub ScanText {
       if ($leadin !~ /^\s*$/) {
         $outstring .= EmitText($leadin);
       }
-      if ($special =~ /^\s*pragma\s+(\S+)\s+(.+?)\s*$/) {
-        $outstring .= "\$pragmas{'$1'} = $2;";
+      if ($special =~ /^\s*pragma\s+(\S+)(?:\s+(.+?))?\s*$/) {
+        if ($1 eq "push") {
+          $outstring .= "unshift(\@pragmas, \\%{{%{\$pragmas[0]}}});\n";
+        }
+        elsif ($1 eq "pop") {
+          $outstring .= "shift(\@pragmas);\n";
+        }
+        else {
+          $outstring .= "\$pragmas[0]{'$1'} = $2;\n";
+        }
       }
       else {
         $outstring .= $special;
