@@ -516,6 +516,7 @@ if ($output_file eq "-") {
   print FILE $outstring;
   close FILE;
   move $tmp_file, $output_file;
+  utime undef, undef, $output_file;
 }
 
 if (defined $deps_file) {
