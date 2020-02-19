@@ -305,6 +305,9 @@ sub ScanText {
       my $token = $1;
       my $value = $3;
       if (defined $value && $value !~ /^\s*$/) {
+        while ($value =~ /\\\s*$/) {
+          chomp(substr($value, -1) = <$file>);
+        }
         $defines{$token} = $value;
         $outstring .= qq{\$defines{\"$token\"} = qq{$value};} if ($perl_mode);
       } else {
