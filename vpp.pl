@@ -493,6 +493,11 @@ if ($perl_mode) {
   $outstring = $buffer;
 
   if ($perl_defines) {
+    my $guard_name = "_" . basename($output_file) . "_";
+    $guard_name =~ s/[^A-Za-z0-9]/_/g;
+    $guard_name = uc($guard_name);
+    $outstring .= "`ifndef $guard_name\n";
+    $outstring .= "`define $guard_name\n";
     foreach my $name (grep {ref(\${main::{$_}}) eq 'GLOB'} sort keys %main::) {
       if (defined ${*{$main::{$name}}{SCALAR}}) {
         if (not exists $existing_scalars{$name} and $name =~ /^[A-Za-z]+_/) {
@@ -500,6 +505,7 @@ if ($perl_mode) {
         }
       }
     }
+    $outstring .= "`endif // $guard_name\n";
   }
 }
 
