@@ -205,6 +205,18 @@ $::asinh = '$asinh';
 $::acosh = '$acosh';
 $::atanh = '$atanh';
 
+# for SVAs
+$::sampled = '$sampled';
+$::rose = '$rose';
+$::fell = '$fell';
+$::stable = '$stable';
+$::changed = '$changed';
+$::past = '$past';
+$::onehot = '$onehot';
+$::onehot0 = '$onehot0';
+$::isunknown = '$isunknown';
+$::countones = '$countones';
+
 
 # this gives ceiling of log base 2 (returns -1 for zero)
 sub log2 {
