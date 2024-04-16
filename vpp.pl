@@ -345,7 +345,14 @@ sub ScanText {
           }
           elsif ($loose_includes) {
             my ($base) = $file =~ /^(.+?)(?:\.[^.]*)?$/;
-            my $pattern = "{" . join(",", @incdirs) . "}/$base.*";
+            my $pattern;
+            if ($file !~ /^\//) {
+              $pattern = "{" . join(",", @incdirs) . "}/$base.*";
+            }
+            else {
+              $pattern = "$base.*";
+              $rest = basename($file)
+            }
             my @files = glob($pattern);
             if (@files) {
               $dir = dirname($files[0]);
