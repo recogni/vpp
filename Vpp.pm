@@ -260,6 +260,7 @@ $::unpacked_dimensions = '$unpacked_dimensions';
 $::unsigned = '$unsigned';
 $::urandom = '$urandom';
 $::urandom_range = '$urandom_range';
+$::value = '$value';
 $::vcdplusautoflushoff = '$vcdplusautoflushoff';
 $::vcdplusautoflushon = '$vcdplusautoflushon';
 $::vcdplusclose = '$vcdplusclose';
@@ -293,6 +294,8 @@ $::include = '`include';
 $::Date = '$Date';
 $::Id = '$Id';
 $::Log = '$Log';
+
+$::WORKAREA = '$WORKAREA';
 
 
 # this gives ceiling of log base 2 (returns -1 for zero)
