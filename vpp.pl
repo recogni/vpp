@@ -509,7 +509,9 @@ if ($perl_mode) {
     foreach my $name (grep {ref(\${main::{$_}}) eq 'GLOB'} sort keys %main::) {
       if (defined ${*{$main::{$name}}{SCALAR}}) {
         if (not exists $existing_scalars{$name} and $name =~ /^[A-Za-z][0-9A-Za-z]*_/) {
+            $outstring .= "`ifndef " . uc($name) . "\n";
             $outstring .= "`define " . uc($name) . " " . ${*{$main::{$name}}{SCALAR}} . "\n";
+            $outstring .= "`endif\n";
         }
       }
     }
