@@ -456,7 +456,6 @@ if ($perl_mode) {
         if (-f "$prefix/$expr") {
           $expr = "$prefix/$expr";
           $dir = dirname($expr);
-          $expr = basename($expr);
           if (!grep {abs_path($_) eq abs_path($dir)} @INC) {
             push(@INC, $dir);
           }
